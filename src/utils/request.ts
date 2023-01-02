@@ -25,7 +25,7 @@ const request = <T>(
   return instance.request<T, Data<T>>({
     url,
     method,
-    [method.toUpperCase() === 'GET' ? 'params' : 'data']: submitData
+    [method.toLowerCase() === 'get' ? 'params' : 'data']: submitData
   })
 }
 
