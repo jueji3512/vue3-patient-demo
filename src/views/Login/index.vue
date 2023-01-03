@@ -28,11 +28,10 @@ const login = async () => {
   const res = isPass.value
     ? await loginByPassword(mobile.value, password.value)
     : await loginByMobile(mobile.value, code.value)
-  console.log(res)
-
+  // console.log(res)
   store.setUser(res.data)
   // 如果有回撤的地址就回撤，否则跳转到个人中心
-  router.push((route.query.returnUrl as string) || '/user')
+  router.push((route.query.returnUrl as string) || '/home')
   showSuccessToast('登陆成功')
 }
 // 发送验证码
@@ -73,7 +72,7 @@ onUnmounted(() => {
       </a>
     </div>
     <!-- 表单 -->
-    <van-form autocomplete="off" @submit="login">
+    <van-form autocomplete="off" @submit="login" ref="form">
       <van-field
         v-model="mobile"
         name="mobile"
