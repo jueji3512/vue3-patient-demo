@@ -1,5 +1,6 @@
 import CpNavBar from '@/components/cp-nav-bar.vue'
 import CpIcon from '@/components/CpIcon.vue'
+import CpRadioBtn from '@/components/CpRadioBtn.vue'
 
 // 这个地方可以通过测试van的一个标签测试一下，仿照它的代码得出以下的代码
 
@@ -10,5 +11,6 @@ declare module 'vue' {
     // 定义具体组件类型，typeof 获取到组件实例类型
     CpNavBar: typeof CpNavBar
     CpIcon: typeof CpIcon
+    CpRadioBtn: typeof CpRadioBtn
   }
 }
