@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import KnowledgeList from './components/KnowledgeList.vue'
+import FollowDoctor from './components/FollowDoctor.vue'
 import type { KnowledgeType } from '@/types/consult'
+import { useConsultStore } from '@/stores'
+import { ConsultType } from '@/enums'
 
+const store = useConsultStore()
 const active = ref<KnowledgeType>('recommend')
 </script>
 
@@ -26,7 +30,11 @@ const active = ref<KnowledgeType>('recommend')
           </router-link>
         </van-col>
         <van-col span="8">
-          <router-link to="/consult/fast" class="nav">
+          <router-link
+            to="/consult/fast"
+            class="nav"
+            @click="store.setType(ConsultType.Fast)"
+          >
             <cp-icon name="home-graphic"></cp-icon>
             <p class="title">极速问诊</p>
             <p class="desc">20s医生极速回复</p>
@@ -68,8 +76,9 @@ const active = ref<KnowledgeType>('recommend')
       </van-row>
     </div>
     <van-tabs shrink sticky v-model:active="active">
-      <van-tab title="关注" name="like"
-        ><knowledge-list type="like" />
+      <van-tab title="关注" name="like">
+        <follow-doctor></follow-doctor>
+        <knowledge-list type="like" />
       </van-tab>
       <van-tab title="推荐" name="recommend"
         ><knowledge-list type="recommend"
