@@ -12,7 +12,7 @@ export enum IllnessTime {
   // 一周内
   Week = 1,
   // 一月内
-  Mouth,
+  Month,
   // 半年内
   HalfYear,
   // 半年以上

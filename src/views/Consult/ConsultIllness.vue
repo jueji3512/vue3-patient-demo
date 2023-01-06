@@ -1,7 +1,15 @@
 <script setup lang="ts">
-import type { ConsultIllness } from '@/types/consult'
-import { ref } from 'vue'
+import type {
+  UploaderAfterRead,
+  UploaderFileListItem
+} from 'vant/lib/uploader/types'
+import type { ConsultIllness, Image } from '@/types/consult'
+import { ref, computed, onMounted } from 'vue'
 import { IllnessTime } from '@/enums'
+import { UploadImg } from '@/services/consult'
+import { useRouter } from 'vue-router'
+import { showConfirmDialog, showToast } from 'vant'
+import { useConsultStore } from '@/stores'
 
 const timeOptions = [
   { label: '一周内', value: IllnessTime.Week },
@@ -18,6 +26,71 @@ const form = ref<ConsultIllness>({
   illnessTime: undefined,
   consultFlag: undefined,
   pictures: []
+})
+
+const fileList = ref<Image[]>([])
+// 图片上传
+const onAfterRead: UploaderAfterRead = (item) => {
+  // item可能为数组也可能为单个（多选和单选图片的问题）
+  // 我们这里控制它只能选一个图
+  if (Array.isArray(item)) return
+  if (!item.file) return
+  // 上传正式代码
+  item.status = 'uploading'
+  item.message = '上传中'
+  UploadImg(item.file)
+    .then((res) => {
+      item.status = 'done'
+      item.message = undefined
+      item.url = res.data.url
+      form.value.pictures?.push(res.data)
+    })
+    .catch(() => {
+      item.status = 'failed'
+      item.message = '上传失败'
+    })
+}
+// 删除图片
+const onDeleteImg = (item: UploaderFileListItem) => {
+  form.value.pictures = form.value.pictures?.filter(
+    (pic) => pic.url !== item.url
+  )
+}
+
+const disabled = computed(
+  () =>
+    !form.value.illnessDesc ||
+    form.value.illnessTime === undefined ||
+    form.value.consultFlag === undefined
+)
+
+const store = useConsultStore()
+const router = useRouter()
+const next = () => {
+  if (!form.value.illnessDesc) return showToast('请输入病情描述')
+  if (form.value.illnessTime === undefined)
+    return showToast('请选择症状持续时间')
+  if (form.value.consultFlag === undefined)
+    return showToast('请选择是否已经就诊')
+  store.setIllness(form.value)
+  router.push('/user/patient?isChange=1')
+}
+// 回退上次信息
+onMounted(() => {
+  if (store.consult.illnessDesc) {
+    showConfirmDialog({
+      title: '温馨提示',
+      message: '是否恢复您之前的病情信息？',
+      confirmButtonColor: 'var(--cp-primary)',
+      closeOnPopstate: false
+    }).then(() => {
+      // 确认
+      const { illnessDesc, illnessTime, consultFlag, pictures } = store.consult
+      form.value = { illnessDesc, illnessTime, consultFlag, pictures }
+      // 图片
+      fileList.value = pictures || []
+    })
+  }
 })
 </script>
 
@@ -52,6 +125,19 @@ const form = ref<ConsultIllness>({
         <p>此次病情是否去医院就诊过？</p>
         <cp-radio-btn :options="flagOptions" v-model="form.consultFlag" />
       </div>
+      <div class="illness-img">
+        <van-uploader
+          :after-read="onAfterRead"
+          @delete="onDeleteImg"
+          v-model="fileList"
+          max-count="9"
+          :max-size="5 * 1024 * 1024"
+        ></van-uploader>
+        <p class="tip">上传内容仅医生可见,最多9张图,最大5MB</p>
+      </div>
+      <van-button :class="{ disabled }" type="primary" block round @click="next"
+        >下一步</van-button
+      >
     </div>
   </div>
 </template>
@@ -109,6 +195,53 @@ const form = ref<ConsultIllness>({
       color: var(--cp-text3);
       padding: 15px 0;
     }
+  }
+}
+.illness-img {
+  padding-top: 16px;
+  margin-bottom: 40px;
+  display: flex;
+  align-items: center;
+  .tip {
+    font-size: 12px;
+    color: var(--cp-tip);
+  }
+  ::v-deep() {
+    .van-uploader {
+      &__preview {
+        &-delete {
+          left: -6px;
+          top: -6px;
+          border-radius: 50%;
+          background-color: var(--cp-primary);
+          width: 20px;
+          height: 20px;
+          &-icon {
+            transform: scale(0.9) translate(-22%, 22%);
+          }
+        }
+        &-image {
+          border-radius: 8px;
+          overflow: hidden;
+        }
+      }
+      &__upload {
+        border-radius: 8px;
+      }
+      &__upload-icon {
+        color: var(--cp-text3);
+      }
+    }
+  }
+}
+.van-button {
+  font-size: 16px;
+  margin-bottom: 30px;
+  &.disabled {
+    opacity: 1;
+    background: #fafafa;
+    color: #d9dbde;
+    border: #fafafa;
   }
 }
 </style>
