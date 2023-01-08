@@ -20,7 +20,7 @@ export type CodeType =
   | 'forgetPassword'
   | 'bindMobile'
 
-// 个人信息类型（详细） 
+// 个人信息类型（详细）
 type OmitUser = Omit<User, 'token'>
 export type UserInfo = OmitUser & {
   // 关注

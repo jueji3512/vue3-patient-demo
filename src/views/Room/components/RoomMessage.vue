@@ -6,6 +6,8 @@ import { showImagePreview, showToast } from 'vant'
 import { useUserStore } from '@/stores'
 import { useRouter } from 'vue-router'
 import { flagOptions, timeOptions } from '@/services/constants'
+import { getPrescriptionPic } from '@/services/consult'
+import EvaluateCard from './evaluateCard.vue'
 import dayjs from 'dayjs'
 
 const formatTime = (time: string) => dayjs(time).format('HH:mm')
@@ -21,10 +23,31 @@ const previewImg = (pictures?: Image[]) => {
   if (pictures && pictures.length)
     showImagePreview(pictures.map((item) => item.url))
 }
+// 显示处方
+const showPrescription = async (id?: string) => {
+  if (id) {
+    const res = await getPrescriptionPic(id)
+    showImagePreview([res.data.url])
+  }
+}
+// 点击处方跳转支付
+const router = useRouter()
+const buy = (pre?: Prescription) => {
+  if (pre) {
+    if (pre.status === PrescriptionStatus.Invalid)
+      return showToast('处方已失效')
+    if (pre.status === PrescriptionStatus.NotPayment && !pre.orderId)
+      return router.push(`/order/pay?id=${pre.id}`)
+    router.push(`/order/${pre.orderId}`)
+  }
+}
 </script>
 
 <template>
-  <template v-for="{ msgType, msg, createTime, from } in list" :key="msg.id">
+  <template
+    v-for="{ msgType, msg, createTime, from, fromAvatar } in list"
+    :key="msg.id"
+  >
     <!-- 病情描述 -->
     <div class="msg msg-illness" v-if="msgType === MsgType.CardPat">
       <div class="patient van-hairline--bottom" v-if="msg.consultRecord">
@@ -60,7 +83,18 @@ const previewImg = (pictures?: Image[]) => {
         <span>{{ msg.content }}</span>
       </div>
     </div>
-    <!-- 我发的消息 -->
+    <!-- 我发的文字消息 -->
+    <div
+      class="msg msg-to"
+      v-if="msgType === MsgType.MsgText && from === store.user?.id"
+    >
+      <div class="content">
+        <div class="time">{{ formatTime(createTime) }}</div>
+        <div class="pao">{{ msg.content }}</div>
+      </div>
+      <van-image :src="store.user?.avatar" />
+    </div>
+    <!-- 我发的图片消息 -->
     <div
       class="msg msg-to"
       v-if="msgType === MsgType.MsgImage && store.user?.id === from"
@@ -71,15 +105,79 @@ const previewImg = (pictures?: Image[]) => {
       </div>
       <van-image :src="store.user?.avatar" />
     </div>
+    <!-- 医生发的文字消息（接收） -->
+    <div
+      class="msg msg-from"
+      v-if="msgType === MsgType.MsgText && from !== store.user?.id"
+    >
+      <van-image :src="fromAvatar" />
+      <div class="content">
+        <div class="time">{{ formatTime(createTime) }}</div>
+        <div class="pao">{{ msg.content }}</div>
+      </div>
+    </div>
+    <!-- 医生发的图片消息 -->
     <div
       class="msg msg-from"
       v-if="msgType === MsgType.MsgImage && store.user?.id !== from"
     >
-      <van-image :src="from" />
+      <van-image :src="fromAvatar" />
       <div class="content">
         <div class="time">{{ formatTime(createTime) }}</div>
         <van-image fit="contain" :src="msg.picture?.url" />
       </div>
+    </div>
+    <!-- 处方 -->
+    <div class="msg msg-recipe" v-if="msgType === MsgType.CardPre">
+      <div class="content" v-if="msg.prescription">
+        <div class="head van-hairline--bottom">
+          <div class="head-tit">
+            <h3>电子处方</h3>
+            <p @click="showPrescription(msg.prescription?.id)">
+              原始处方 <van-icon name="arrow"></van-icon>
+            </p>
+          </div>
+          <p>
+            {{ msg.prescription.name }}
+            {{ msg.prescription.genderValue }}
+            {{ msg.prescription.age }}岁
+            {{ msg.prescription.diagnosis }}
+          </p>
+          <p>开方时间：{{ msg.prescription.createTime }}</p>
+        </div>
+        <div class="body">
+          <div
+            class="body-item"
+            v-for="med in msg.prescription.medicines"
+            :key="med.id"
+          >
+            <div class="durg">
+              <p>{{ med.name }} {{ med.specs }}</p>
+              <p>{{ med.usageDosag }}</p>
+            </div>
+            <div class="num">x{{ med.quantity }}</div>
+          </div>
+        </div>
+        <div class="foot">
+          <span @click="buy(msg.prescription)">购买药品</span>
+        </div>
+      </div>
+    </div>
+    <!-- 结束订单 -->
+    <div
+      class="msg msg-tip msg-tip-cancel"
+      v-if="msgType === MsgType.NotifyCancel"
+    >
+      <div class="content">
+        <span>{{ msg.content }}</span>
+      </div>
+    </div>
+    <!-- 评价 -->
+    <div
+      class="msg msg-comment"
+      v-if="msgType === MsgType.CardEva || msgType === MsgType.CardEvaForm"
+    >
+      <evaluate-card :evaluateDoc="msg.evaluateDoc" />
     </div>
   </template>
 </template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Socket } from 'socket.io-client'
 import { io } from 'socket.io-client'
-import { onMounted, onUnmounted, ref, nextTick } from 'vue'
+import { onMounted, onUnmounted, ref, nextTick, provide } from 'vue'
 import { baseURL } from '@/utils/request'
 import { useUserStore } from '@/stores'
 import { useRoute } from 'vue-router'
@@ -13,6 +13,8 @@ import RoomMessage from './components/RoomMessage.vue'
 import type { ConsultOrderItem } from '@/types/consult'
 import { getConsultOrderDetail } from '@/services/consult'
 import type { Image } from '@/types/consult'
+import dayjs from 'dayjs'
+import { showToast } from 'vant'
 
 const sendImage = (img: Image) => {
   socket.emit('sendChatMsg', {
@@ -43,9 +45,10 @@ onMounted(async () => {
   })
 
   socket.on('connect', () => {
+    list.value = []
     console.log('连接成功')
   })
-  socket.on('error', (event) => {
+  socket.on('error', () => {
     // 错误异常消息
     console.log('error')
   })
@@ -57,6 +60,7 @@ onMounted(async () => {
   socket.on('chatMsgList', ({ data }: { data: TimeMessages[] }) => {
     const arr: Message[] = []
     data.forEach((item, i) => {
+      if (i === 0) time.value = item.createTime
       arr.push({
         msgType: MsgType.Notify,
         msg: { content: item.createTime },
@@ -67,6 +71,15 @@ onMounted(async () => {
     })
     // 加到聊天列表
     list.value.unshift(...arr)
+    loading.value = false
+    if (!data.length) return showToast('没有聊天记录了')
+    nextTick(() => {
+      if (initialMsg.value) {
+        socket.emit('updateMsgStatus', arr[arr.length - 1].id)
+        window.scrollTo(0, document.body.scrollHeight)
+        initialMsg.value = false
+      }
+    })
   })
   // 订单状态 在onMounted注册
   socket.on('statusChange', async () => {
@@ -77,6 +90,7 @@ onMounted(async () => {
   socket.on('receiveChatMsg', async (event) => {
     list.value.push(event)
     await nextTick()
+    socket.emit('updateMsgStatus', event.id)
     window.scrollTo(0, document.body.scrollHeight)
   })
 })
@@ -97,13 +111,34 @@ const sendText = (text: string) => {
     msg: { content: text }
   })
 }
+
+// 下拉刷新
+const time = ref(dayjs().format('YYYY-MM-DD HH:mm:ss'))
+const loading = ref(false)
+const onRefresh = () => {
+  socket.emit('getChatMsgList', 20, time.value, route.query.orderId)
+}
+const initialMsg = ref(true)
+
+provide('consult', consult)
+
+const completeEva = (score: number) => {
+  const item = list.value.find((item) => item.msgType === MsgType.CardEvaForm)
+  if (item) {
+    item.msg.evaluateDoc = { score }
+    item.msgType = MsgType.CardEva
+  }
+}
+provide('completeEva', completeEva)
 </script>
 
 <template>
   <div class="room-page">
     <cp-nav-bar title="医生问诊室" />
     <room-status :status="consult?.status" :countdown="consult?.countdown" />
-    <room-message :list="list" />
+    <van-pull-refresh v-model="loading" @refresh="onRefresh">
+      <room-message :list="list" />
+    </van-pull-refresh>
     <room-action
       :disabled="consult?.status !== OrderType.ConsultChat"
       @send-text="sendText"

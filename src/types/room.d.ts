@@ -65,7 +65,7 @@ export type Message = {
   msgType: MsgType
   // 发信人
   from?: string
-  // 发信人ID
+  // 发信人头像
   fromAvatar?: string
   // 收信人
   to?: string
