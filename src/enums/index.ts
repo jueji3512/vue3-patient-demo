@@ -48,8 +48,8 @@ export enum PrescriptionStatus {
   // 已失效
   Invalid = 3
 }
+// 问诊订单状态
 export enum OrderType {
-  // 问诊订单
   // 待支付
   ConsultPay = 1,
   // 待接诊

@@ -24,6 +24,9 @@ const onLoad = async () => {
   }
   loading.value = false
 }
+// 父组件删除订单
+const onDelete = (id: string) =>
+  (list.value = list.value.filter((item) => item.id != id))
 </script>
 
 <template>
@@ -38,6 +41,7 @@ const onLoad = async () => {
         v-for="item in list"
         :key="item.id"
         :item="item"
+        @on-delete="onDelete"
       ></consult-item>
     </van-list>
   </div>

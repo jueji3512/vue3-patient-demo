@@ -6,7 +6,7 @@ import { showImagePreview, showToast } from 'vant'
 import { useUserStore } from '@/stores'
 import { useRouter } from 'vue-router'
 import { flagOptions, timeOptions } from '@/services/constants'
-import { getPrescriptionPic } from '@/services/consult'
+import { useShowPrescription } from '@/composable'
 import EvaluateCard from './evaluateCard.vue'
 import dayjs from 'dayjs'
 
@@ -18,17 +18,12 @@ const getIllnessTimeText = (time: IllnessTime) =>
   timeOptions.find((item) => item.value === time)?.label
 const getConsultFlagText = (flag: 0 | 1) =>
   flagOptions.find((item) => item.value === flag)?.label
+// 查看处方
+const { showPrescription } = useShowPrescription()
 
 const previewImg = (pictures?: Image[]) => {
   if (pictures && pictures.length)
     showImagePreview(pictures.map((item) => item.url))
-}
-// 显示处方
-const showPrescription = async (id?: string) => {
-  if (id) {
-    const res = await getPrescriptionPic(id)
-    showImagePreview([res.data.url])
-  }
 }
 // 点击处方跳转支付
 const router = useRouter()
@@ -38,6 +33,7 @@ const buy = (pre?: Prescription) => {
       return showToast('处方已失效')
     if (pre.status === PrescriptionStatus.NotPayment && !pre.orderId)
       return router.push(`/order/pay?id=${pre.id}`)
+    // 未支付or有订单or已支付转去药品订单详情
     router.push(`/order/${pre.orderId}`)
   }
 }

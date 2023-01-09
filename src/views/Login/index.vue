@@ -5,7 +5,7 @@ import { showToast, showSuccessToast, type FormInstance } from 'vant'
 import { loginByPassword, sentMobileCode, loginByMobile } from '@/services/user'
 import { useUserStore } from '@/stores'
 import { useRoute, useRouter } from 'vue-router'
-import CpIcon from '@/components/CpIcon.vue'
+import CpIcon from '@/components/cp-icon.vue'
 
 const store = useUserStore()
 const router = useRouter()

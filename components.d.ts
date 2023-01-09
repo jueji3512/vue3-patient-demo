@@ -7,9 +7,11 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
-    CpIcon: typeof import('./src/components/CpIcon.vue')['default']
+    CpConsultMore: typeof import('./src/components/cp-consult-more.vue')['default']
+    CpIcon: typeof import('./src/components/cp-icon.vue')['default']
     CpNavBar: typeof import('./src/components/cp-nav-bar.vue')['default']
-    CpRadioBtn: typeof import('./src/components/CpRadioBtn.vue')['default']
+    CpPaySheet: typeof import('./src/components/cp-pay-sheet.vue')['default']
+    CpRadioBtn: typeof import('./src/components/cp-radio-btn.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     VanActionBar: typeof import('vant/es')['ActionBar']
@@ -30,6 +32,7 @@ declare module '@vue/runtime-core' {
     VanImage: typeof import('vant/es')['Image']
     VanList: typeof import('vant/es')['List']
     VanNavBar: typeof import('vant/es')['NavBar']
+    VanOpenBar: typeof import('vant/es')['OpenBar']
     VanPopover: typeof import('vant/es')['Popover']
     VanPopup: typeof import('vant/es')['Popup']
     VanPullRefresh: typeof import('vant/es')['PullRefresh']
@@ -37,6 +40,8 @@ declare module '@vue/runtime-core' {
     VanRow: typeof import('vant/es')['Row']
     VanSidebar: typeof import('vant/es')['Sidebar']
     VanSidebarItem: typeof import('vant/es')['SidebarItem']
+    VanSkeletion: typeof import('vant/es')['Skeletion']
+    VanSkeleton: typeof import('vant/es')['Skeleton']
     VanSubmitBar: typeof import('vant/es')['SubmitBar']
     VanSwipe: typeof import('vant/es')['Swipe']
     VanSwipeItem: typeof import('vant/es')['SwipeItem']
@@ -44,6 +49,7 @@ declare module '@vue/runtime-core' {
     VanTabbar: typeof import('vant/es')['Tabbar']
     VanTabbarItem: typeof import('vant/es')['TabbarItem']
     VanTabs: typeof import('vant/es')['Tabs']
+    VanTag: typeof import('vant/es')['Tag']
     VanUploader: typeof import('vant/es')['Uploader']
   }
 }

@@ -1,6 +1,8 @@
 import CpNavBar from '@/components/cp-nav-bar.vue'
-import CpIcon from '@/components/CpIcon.vue'
-import CpRadioBtn from '@/components/CpRadioBtn.vue'
+import CpIcon from '@/components/cp-icon.vue'
+import CpRadioBtn from '@/components/cp-radio-btn.vue'
+import CpConsultMore from '@/components/cp-consult-more'
+import CpPaySheet from '@/components/cp-pay-sheet.vue'
 
 // 这个地方可以通过测试van的一个标签测试一下，仿照它的代码得出以下的代码
 
@@ -12,5 +14,7 @@ declare module 'vue' {
     CpNavBar: typeof CpNavBar
     CpIcon: typeof CpIcon
     CpRadioBtn: typeof CpRadioBtn
+    CpConsultMore: typeof CpConsultMore
+    CpPaySheet: typeof CpPaySheet
   }
 }
