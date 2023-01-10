@@ -55,6 +55,9 @@ const send = async () => {
 onUnmounted(() => {
   window.clearInterval(timeId)
 })
+
+const url = encodeURIComponent(import.meta.env.VITE_APP_CALLBACK)
+console.log(url)
 </script>
 
 <template>
@@ -126,9 +129,9 @@ onUnmounted(() => {
     <!-- 底部 -->
     <div class="login-other">
       <van-divider>第三方登录</van-divider>
-      <div class="icon">
+      <a href="#" class="icon">
         <img src="@/assets/qq.svg" alt="" />
-      </div>
+      </a>
     </div>
   </div>
 </template>

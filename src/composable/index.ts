@@ -1,4 +1,3 @@
-import { ref } from 'vue'
 import {
   cancelOrder,
   followDoctor,
@@ -8,6 +7,9 @@ import {
 import type { ConsultOrderItem, FollowType } from '@/types/consult'
 import { showImagePreview, showSuccessToast, showFailToast } from 'vant'
 import { OrderType } from '@/enums'
+import { getMedicalOrderDetail } from '@/services/order'
+import type { OrderDetail } from '@/types/order'
+import { onMounted, ref } from 'vue'
 
 // 关注
 export const useFollow = (type: FollowType = 'doc') => {
@@ -68,4 +70,19 @@ export const useDeleteOrder = (callback: (id: string) => void) => {
     }
   }
   return { loading, deleteConsultOrder }
+}
+// 订单详情
+export const useOrderDetail = (id: string) => {
+  const loading = ref(false)
+  const order = ref<OrderDetail>()
+  onMounted(async () => {
+    loading.value = true
+    try {
+      const res = await getMedicalOrderDetail(id)
+      order.value = res.data
+    } finally {
+      loading.value = false
+    }
+  })
+  return { order, loading }
 }

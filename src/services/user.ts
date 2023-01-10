@@ -19,6 +19,10 @@ export const sentMobileCode = (mobile: string, type: CodeType) => {
 export const loginByMobile = (mobile: string, code: string) => {
   return request<User>('/login', 'POST', { mobile, code })
 }
+// qq登录
+export const loginByQQ = (openId: string) => {
+  return request<User>('/login/thirdparty', 'POST', { openId, source: 'qq' })
+}
 // 获取个人详细信息
 export const getUserInfo = () => {
   return request<UserInfo>('/patient/myUser')
